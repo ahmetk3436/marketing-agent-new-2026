@@ -38,21 +38,21 @@ def create_content_task(niche: str, platforms: list[str] = None) -> Task:
     )
 
 
-def create_social_task(posts_summary: str = "") -> Task:
+def create_social_task(context_tasks: list = None) -> Task:
     """Create a social media scheduling task."""
-    return Task(
+    task = Task(
         description=(
-            f"Review the generated content and schedule it for posting.\n\n"
-            f"Context from content team: {posts_summary}\n\n"
-            f"For each post:\n"
-            f"1. Review and optimize the copy if needed\n"
-            f"2. Add appropriate hashtags if missing\n"
-            f"3. Schedule via Buffer at optimal times\n"
-            f"4. If Buffer is not configured, save posts locally with scheduling notes\n\n"
-            f"Optimal posting times:\n"
-            f"- Twitter: 9 AM, 1 PM, 6 PM\n"
-            f"- Instagram: 11 AM, 7 PM\n"
-            f"- LinkedIn: 8 AM, 12 PM"
+            "Review the generated content from the content team and schedule it for posting.\n\n"
+            "Use the content that was created in the previous task as your input.\n\n"
+            "For each post:\n"
+            "1. Review and optimize the copy if needed\n"
+            "2. Add appropriate hashtags if missing\n"
+            "3. Schedule via Buffer at optimal times\n"
+            "4. If Buffer is not configured, save posts locally with scheduling notes\n\n"
+            "Optimal posting times:\n"
+            "- Twitter: 9 AM, 1 PM, 6 PM\n"
+            "- Instagram: 11 AM, 7 PM\n"
+            "- LinkedIn: 8 AM, 12 PM"
         ),
         expected_output=(
             "Confirmation of posts scheduled or saved, with platform, "
@@ -60,6 +60,9 @@ def create_social_task(posts_summary: str = "") -> Task:
         ),
         agent=social_media_agent,
     )
+    if context_tasks:
+        task.context = context_tasks
+    return task
 
 
 def create_seo_task(topic: str, num_articles: int = 3) -> Task:
@@ -141,7 +144,7 @@ def create_analytics_task() -> Task:
 def run_daily_content_crew(niche: str) -> str:
     """Run the daily content creation + scheduling pipeline."""
     content_task = create_content_task(niche)
-    social_task = create_social_task()
+    social_task = create_social_task(context_tasks=[content_task])
 
     crew = Crew(
         agents=[content_agent, social_media_agent],
@@ -197,18 +200,18 @@ def run_analytics_crew() -> str:
 
 def run_full_pipeline(niche: str, product_name: str, value_prop: str) -> str:
     """Run the complete marketing pipeline - all 5 agents."""
+    content_task = create_content_task(niche)
+    social_task = create_social_task(context_tasks=[content_task])
+    seo_task = create_seo_task(niche)
+    email_task = create_email_task(product_name, value_prop)
+    analytics_task = create_analytics_task()
+
     crew = Crew(
         agents=[
             content_agent, social_media_agent,
             seo_agent, email_agent, analytics_agent,
         ],
-        tasks=[
-            create_content_task(niche),
-            create_social_task(),
-            create_seo_task(niche),
-            create_email_task(product_name, value_prop),
-            create_analytics_task(),
-        ],
+        tasks=[content_task, social_task, seo_task, email_task, analytics_task],
         verbose=True,
     )
 
