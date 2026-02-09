@@ -190,13 +190,38 @@ async def health(request):
     return JSONResponse({
         "status": "ok",
         "service": "marketing-agent",
+        "version": "1.1.0",
         "tools": ["daily_content", "seo_content", "email_sequence", "analytics_report", "full_pipeline"],
     })
+
+
+async def test_llm(request):
+    """Quick test that litellm + DeepSeek work."""
+    try:
+        import litellm
+        llm_ver = litellm.__version__
+    except ImportError:
+        return JSONResponse({"error": "litellm not installed"}, status_code=500)
+
+    try:
+        from crewai import LLM
+        api_key = os.environ.get("DEEPSEEK_API_KEY", "")
+        masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "NOT SET"
+        llm = LLM(model="deepseek/deepseek-chat", api_key=api_key, temperature=0.1)
+        return JSONResponse({
+            "litellm_version": llm_ver,
+            "deepseek_key": masked,
+            "llm_model": str(llm.model),
+            "status": "ok",
+        })
+    except Exception as e:
+        return JSONResponse({"error": str(e), "litellm_version": llm_ver}, status_code=500)
 
 
 app = Starlette(
     routes=[
         Route("/health", endpoint=health),
+        Route("/test-llm", endpoint=test_llm),
         Route("/sse", endpoint=handle_sse),
         Mount("/messages/", app=sse.handle_post_message),
     ],
