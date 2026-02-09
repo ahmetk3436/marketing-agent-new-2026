@@ -15,18 +15,20 @@ from tools import (
     send_telegram, read_analytics, save_daily_report,
 )
 
-# Shared LLM - DeepSeek via litellm
+# Shared LLM - DeepSeek via OpenAI-compatible API
 _deepseek_key = os.environ.get("DEEPSEEK_API_KEY", "")
 
 llm = LLM(
-    model="deepseek/deepseek-chat",
+    model="openai/deepseek-chat",
     api_key=_deepseek_key,
+    base_url="https://api.deepseek.com/v1",
     temperature=0.7,
 )
 
 llm_analytical = LLM(
-    model="deepseek/deepseek-chat",
+    model="openai/deepseek-chat",
     api_key=_deepseek_key,
+    base_url="https://api.deepseek.com/v1",
     temperature=0.1,
 )
 
