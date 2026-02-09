@@ -48,12 +48,15 @@ content_agent = Agent(
         "from 0 to 100K followers using only organic strategies. You understand "
         "platform algorithms deeply - what works on Twitter is different from "
         "Instagram or LinkedIn. You always research trends before creating content "
-        "and adapt your style to each platform's culture."
+        "and adapt your style to each platform's culture.\n\n"
+        "IMPORTANT: You MUST use your 'Search Trends' tool first to research "
+        "current trends, then use 'Save Post Locally' to save each post you create."
     ),
     tools=[search_trends, google_search, save_post_locally],
     llm=llm,
     verbose=True,
     allow_delegation=False,
+    max_iter=25,
 )
 
 
@@ -73,12 +76,15 @@ social_media_agent = Agent(
         "accounts simultaneously. You know the best posting times for each "
         "platform, understand how to write engaging captions, and always "
         "include proper hashtags and CTAs. You use Buffer for scheduling "
-        "and track engagement metrics religiously."
+        "and track engagement metrics religiously.\n\n"
+        "IMPORTANT: Use the content from the previous task as input. "
+        "Save optimized posts using 'Save Post Locally' tool."
     ),
     tools=[post_to_buffer, save_post_locally, read_analytics],
     llm=llm,
     verbose=True,
     allow_delegation=False,
+    max_iter=25,
 )
 
 
@@ -99,12 +105,15 @@ seo_agent = Agent(
         "organic visitors using programmatic SEO and AI content. You understand "
         "search intent, keyword clustering, and how to create content that "
         "ranks. You focus on long-tail keywords with low competition and "
-        "high commercial intent."
+        "high commercial intent.\n\n"
+        "IMPORTANT: ALWAYS use 'Keyword Research' tool first, then 'Generate SEO Article' "
+        "to save each article."
     ),
     tools=[keyword_research, google_search, save_seo_article],
     llm=llm,
     verbose=True,
     allow_delegation=False,
+    max_iter=25,
 )
 
 
@@ -131,6 +140,7 @@ email_agent = Agent(
     llm=llm,
     verbose=True,
     allow_delegation=False,
+    max_iter=25,
 )
 
 
@@ -156,4 +166,5 @@ analytics_agent = Agent(
     llm=llm_analytical,
     verbose=True,
     allow_delegation=False,
+    max_iter=25,
 )
