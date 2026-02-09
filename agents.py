@@ -4,6 +4,7 @@ Marketing Agent Pipeline - Agent Definitions
 5 autonomous agents that form the marketing crew.
 """
 
+import os
 from crewai import Agent, LLM
 
 from tools import (
@@ -14,14 +15,18 @@ from tools import (
     send_telegram, read_analytics, save_daily_report,
 )
 
-# Shared LLM - DeepSeek via litellm (no OPENAI_API_KEY needed)
+# Shared LLM - DeepSeek via litellm
+_deepseek_key = os.environ.get("DEEPSEEK_API_KEY", "")
+
 llm = LLM(
     model="deepseek/deepseek-chat",
+    api_key=_deepseek_key,
     temperature=0.7,
 )
 
 llm_analytical = LLM(
     model="deepseek/deepseek-chat",
+    api_key=_deepseek_key,
     temperature=0.1,
 )
 
