@@ -40,7 +40,7 @@ def create_content_task(niche: str, platforms: list[str] = None) -> Task:
 
 def create_social_task(context_tasks: list = None) -> Task:
     """Create a social media scheduling task."""
-    task = Task(
+    kwargs = dict(
         description=(
             "Review the generated content from the content team and schedule it for posting.\n\n"
             "Use the content that was created in the previous task as your input.\n\n"
@@ -61,8 +61,8 @@ def create_social_task(context_tasks: list = None) -> Task:
         agent=social_media_agent,
     )
     if context_tasks:
-        task.context = context_tasks
-    return task
+        kwargs["context"] = context_tasks
+    return Task(**kwargs)
 
 
 def create_seo_task(topic: str, num_articles: int = 3) -> Task:
@@ -153,7 +153,12 @@ def run_daily_content_crew(niche: str) -> str:
     )
 
     result = crew.kickoff()
-    return str(result)
+    # Combine all task outputs
+    parts = []
+    for task in [content_task, social_task]:
+        if hasattr(task, 'output') and task.output:
+            parts.append(f"## {task.agent.role}\n\n{task.output}")
+    return "\n\n---\n\n".join(parts) if parts else str(result)
 
 
 def run_seo_crew(topic: str, num_articles: int = 3) -> str:
@@ -206,14 +211,20 @@ def run_full_pipeline(niche: str, product_name: str, value_prop: str) -> str:
     email_task = create_email_task(product_name, value_prop)
     analytics_task = create_analytics_task()
 
+    all_tasks = [content_task, social_task, seo_task, email_task, analytics_task]
+
     crew = Crew(
         agents=[
             content_agent, social_media_agent,
             seo_agent, email_agent, analytics_agent,
         ],
-        tasks=[content_task, social_task, seo_task, email_task, analytics_task],
+        tasks=all_tasks,
         verbose=True,
     )
 
     result = crew.kickoff()
-    return str(result)
+    parts = []
+    for task in all_tasks:
+        if hasattr(task, 'output') and task.output:
+            parts.append(f"## {task.agent.role}\n\n{task.output}")
+    return "\n\n---\n\n".join(parts) if parts else str(result)
