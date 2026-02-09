@@ -199,7 +199,7 @@ async def test_llm(request):
     """Quick test that litellm + DeepSeek work."""
     try:
         import litellm
-        llm_ver = litellm.__version__
+        llm_ver = getattr(litellm, "__version__", "installed")
     except ImportError:
         return JSONResponse({"error": "litellm not installed"}, status_code=500)
 
@@ -209,13 +209,13 @@ async def test_llm(request):
         masked = f"{api_key[:8]}...{api_key[-4:]}" if len(api_key) > 12 else "NOT SET"
         llm = LLM(model="deepseek/deepseek-chat", api_key=api_key, temperature=0.1)
         return JSONResponse({
-            "litellm_version": llm_ver,
+            "litellm": llm_ver,
             "deepseek_key": masked,
             "llm_model": str(llm.model),
             "status": "ok",
         })
     except Exception as e:
-        return JSONResponse({"error": str(e), "litellm_version": llm_ver}, status_code=500)
+        return JSONResponse({"error": str(e), "litellm": llm_ver}, status_code=500)
 
 
 app = Starlette(
